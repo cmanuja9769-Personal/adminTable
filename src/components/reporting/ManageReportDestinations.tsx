@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ManageTable } from '../common/ManageTable';
-import type { ReportDestination, TableColumn } from '../../types/reporting';
+import { ReportingManagementDialog } from '../common/ReportingManagementDialog';
+import type { ReportDestination, TableConfig } from '../../types/reporting';
 import { ColumnDataType } from '../../types/reporting';
 import { ReportingService } from '../../services/reportingService';
 
@@ -12,37 +12,45 @@ export const ManageReportDestinations: React.FC<ManageReportDestinationsProps> =
   const [destinations, setDestinations] = useState<ReportDestination[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const columns: TableColumn[] = [
+  const columns: TableConfig = [
     { 
       field: 'number', 
-      path: 'number', 
-      default: false, 
+      path: 'id', 
+      default: true, 
       type: ColumnDataType.NUMBER,
-      label: 'RD #', 
-      sortable: true
+      label: '#', 
+      sortable: false,
+      order: 1,
+      align: 'center'
     },
     { 
       field: 'name', 
       path: 'name', 
-      default: '', 
+      default: true, 
       type: ColumnDataType.TEXT,
       label: 'Report Destination', 
-      sortable: true
+      sortable: true,
+      order: 2,
+      wide: false
     },
     { 
       field: 'associatedRfes', 
       path: 'associatedActiveRfe', 
-      default: 0, 
+      default: true, 
       type: ColumnDataType.NUMBER,
-      label: '# of Associated RFEs', 
-      sortable: true
+      label: '# RFEs', 
+      sortable: true,
+      order: 3,
+      align: 'center'
     },
     { 
       field: 'actions', 
       path: 'actions', 
-      default: false, 
+      default: true, 
       type: ColumnDataType.ACTIONS,
-      label: 'Actions'
+      label: 'Actions',
+      order: 4,
+      align: 'center'
     }
   ];
 
@@ -136,7 +144,7 @@ export const ManageReportDestinations: React.FC<ManageReportDestinationsProps> =
   }
 
   return (
-    <ManageTable
+    <ReportingManagementDialog
       title="Manage Report Destinations"
       data={destinations}
       columns={columns}

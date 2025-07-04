@@ -18,23 +18,46 @@ export interface ReportDestination {
   isEditing?: boolean;
 }
 
+export enum SortDirection {
+  ASC = 'asc',
+  DESC = 'desc',
+  NONE = 'none'
+}
+
 export enum ColumnDataType {
-  TEXT = 'text',
+  TEXT = 'string',
   NUMBER = 'number',
   DATE = 'date',
   BOOLEAN = 'boolean',
-  ACTIONS = 'actions'
+  ACTIONS = 'actions',
+  CUSTOM = 'custom',
+  LINK = 'link'
 }
 
-export interface TableColumn {
+// Updated to match your reference ColumnConfig interface
+export interface ColumnConfig {
   field: string;
-  path: string;
-  group?: string;
-  default: boolean | string | number;
   type: ColumnDataType;
+  path: string;
+  id?: string;
+  order?: number;
+  wide?: boolean;
+  group?: string;
+  default?: boolean;
+  customCellPath?: string;
+  customCellKeyPath?: string;
+  href?: string;
+  customClass?: string;
   label: string;
   sortable?: boolean;
+  align?: 'left' | 'center' | 'right';
 }
+
+// Keep TableColumn as alias for backward compatibility
+export type TableColumn = ColumnConfig;
+
+// Updated to match your reference TableConfig type
+export type TableConfig = ColumnConfig[];
 
 export interface BaseTableItem {
   id: string;
@@ -47,7 +70,7 @@ export interface BaseTableItem {
 export interface ManageTableProps<T extends BaseTableItem> {
   title: string;
   data: T[];
-  columns: TableColumn[];
+  columns: TableConfig;
   onAdd: () => void;
   onEdit: (item: T) => void;
   onSave: (item: T) => void;

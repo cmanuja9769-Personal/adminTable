@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import {
   Table,
   TableBody,
@@ -16,7 +16,6 @@ import {
   ArrowDownward
 } from '@mui/icons-material';
 import type { TableColumn, BaseTableItem } from '../../types/reporting';
-import { ColumnDataType } from '../../types/reporting';
 import { EditableTableRow } from './EditableTableRow';
 
 interface DataTableProps<T extends BaseTableItem> {
