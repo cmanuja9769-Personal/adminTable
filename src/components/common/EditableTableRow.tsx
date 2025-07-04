@@ -25,7 +25,7 @@ export const EditableTableRow = forwardRef<HTMLTableRowElement, EditableRowProps
     onSave,
     onCancel,
     rowNumber
-  }: EditableRowProps<T>, ref: React.Ref<HTMLTableRowElement>) {
+  }: EditableRowProps<T>, ref) {
     const [editedName, setEditedName] = useState(item.name);
     const [originalName] = useState(item.name);
     const [hasChanges, setHasChanges] = useState(false);
@@ -57,7 +57,7 @@ export const EditableTableRow = forwardRef<HTMLTableRowElement, EditableRowProps
         onCancel(item);
         return;
       }
-
+      
       onSave({
         ...item,
         name: editedName.trim()
@@ -92,10 +92,11 @@ export const EditableTableRow = forwardRef<HTMLTableRowElement, EditableRowProps
     return (
       <TableRow
         ref={ref}
-        className={`${item.isNew
-            ? '!tw-bg-blue-50 hover:!tw-bg-blue-100'
+        className={`${
+          item.isNew 
+            ? '!tw-bg-blue-50 hover:!tw-bg-blue-100' 
             : 'hover:!tw-bg-gray-50'
-          }`}
+        }`}
       >
         <TableCell sx={{ width: '60px' }}>{rowNumber || '-'}</TableCell>
         <TableCell sx={{ width: 'auto' }}>

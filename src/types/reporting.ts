@@ -24,17 +24,17 @@ export enum SortDirection {
   NONE = 'none'
 }
 
+// Match your exact ColumnDataType enum with ACTIONS added back
 export enum ColumnDataType {
   TEXT = 'string',
-  NUMBER = 'number',
   DATE = 'date',
-  BOOLEAN = 'boolean',
-  ACTIONS = 'actions',
   CUSTOM = 'custom',
-  LINK = 'link'
+  LINK = 'link',
+  ACTIONS = 'actions',
+  NUMBER = 'number'
 }
 
-// Updated to match your reference ColumnConfig interface
+// Match your exact ColumnConfig interface
 export interface ColumnConfig {
   field: string;
   type: ColumnDataType;
@@ -48,16 +48,21 @@ export interface ColumnConfig {
   customCellKeyPath?: string;
   href?: string;
   customClass?: string;
-  label: string;
+  label?: string;
   sortable?: boolean;
   align?: 'left' | 'center' | 'right';
 }
 
-// Keep TableColumn as alias for backward compatibility
-export type TableColumn = ColumnConfig;
-
-// Updated to match your reference TableConfig type
+// Match your exact TableConfig type
 export type TableConfig = ColumnConfig[];
+
+// Action config for table actions
+export interface ActionConfig<T> {
+  label: string;
+  onClick: (item: T) => void;
+  disabled?: boolean;
+  icon?: React.ReactNode;
+}
 
 export interface BaseTableItem {
   id: string;

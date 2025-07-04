@@ -10,17 +10,22 @@ import {
   IconButton,
   Box,
   TableSortLabel,
-  Typography
+  Typography,
+  Icon
 } from '@mui/material';
 import {
   Edit,
   ArrowUpward,
   ArrowDownward
 } from '@mui/icons-material';
-import { get } from 'lodash';
+import { get, isArray } from 'lodash';
 import { SortDirection, ColumnDataType } from '../../types/reporting';
-import type { ColumnConfig, BaseTableItem, TableConfig } from '../../types/reporting';
+import type { ColumnConfig, BaseTableItem, TableConfig, ActionConfig } from '../../types/reporting';
 import { EditableTableRow } from './EditableTableRow';
+import ActionsMenu from '../ActionsMenu/ActionsMenu';
+import BaseChip from '../BaseChip/BaseChip';
+import Link from '../Link/Link';
+import { MenuIcon, SortAscIcon, SortDescIcon, SortIcon } from '../../assets/icons';
 
 interface ReportingTableViewProps<T extends BaseTableItem> {
   data: T[];
@@ -31,6 +36,16 @@ interface ReportingTableViewProps<T extends BaseTableItem> {
   order?: SortDirection;
   orderBy?: string;
   onSort?: (field: string) => void;
+  tableActions?: ActionConfig<T>[];
+  customCellFallback?: React.ReactNode;
+  handleCustomCellClick?: (row: T, id?: string) => void;
+  displayedColumns?: string[] | null;
+  tableKey?: string;
+  dimmedRowConfig?: {
+    keyPath: string;
+    value: any;
+  };
+  sortMap?: Record<string, string>;
 }
 
 export function ReportingTableView<T extends BaseTableItem>({
@@ -41,20 +56,33 @@ export function ReportingTableView<T extends BaseTableItem>({
   onCancel,
   order = SortDirection.NONE,
   orderBy = '',
-  onSort
+  onSort,
+  tableActions = [],
+  customCellFallback,
+  handleCustomCellClick,
+  displayedColumns,
+  tableKey = 'id',
+  dimmedRowConfig,
+  sortMap = {}
 }: ReportingTableViewProps<T>) {
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const newRowRef = useRef<HTMLTableRowElement>(null);
   const [visibleColumns, setVisibleColumns] = useState<ColumnConfig[]>([]);
+  const [sortedVisibleColumns, setSortedVisibleColumns] = useState<ColumnConfig[]>([]);
 
-  // Filter and sort columns similar to your reference
+  // Filter and sort columns exactly like your reference
   useEffect(() => {
-    const filteredColumns = columns.filter(col => col.default !== false);
-    const sortedColumns = filteredColumns.sort((a, b) => 
-      (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER)
-    );
-    setVisibleColumns(sortedColumns);
-  }, [columns]);
+    if (displayedColumns?.length) {
+      setVisibleColumns(columns.filter((item) => displayedColumns.includes(item.field) || !item.group));
+    } else {
+      setVisibleColumns(columns.filter((item) => item.default));
+    }
+  }, [displayedColumns, columns]);
+
+  useEffect(() => {
+    const sortedCols = visibleColumns?.sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER));
+    setSortedVisibleColumns(sortedCols);
+  }, [visibleColumns]);
 
   // Scroll to new row when a new item is added
   useEffect(() => {
@@ -71,26 +99,30 @@ export function ReportingTableView<T extends BaseTableItem>({
     return index + 1;
   };
 
-  const getColumnWidth = (column: ColumnConfig) => {
-    if (column.wide) return '28rem';
+  const getSortDir = (property: string): SortDirection => {
+    const isAsc = orderBy === property && order === SortDirection.ASC;
+    const isDesc = orderBy === property && order === SortDirection.DESC;
     
-    switch (column.field) {
-      case 'number':
-        return '60px';
-      case 'actions':
-        return '80px';
-      case 'associatedRfes':
-        return '120px';
-      default:
-        return 'auto';
+    if (isAsc) {
+      return SortDirection.DESC;
+    } else if (isDesc) {
+      return SortDirection.NONE;
+    } else {
+      return SortDirection.ASC;
+    }
+  };
+
+  const handleSort = (property: string) => {
+    if (onSort && sortedVisibleColumns.find(col => col.field === property)?.sortable) {
+      onSort(property);
     }
   };
 
   const renderCell = (item: T, colConfig: ColumnConfig) => {
-    const { type, path, field } = colConfig;
-    const cellContent = get(item, path);
+    const { type, path, id, href, customCellPath, customCellKeyPath, customClass, field } = colConfig;
+    const cellContent = get(item, path) as string | T | T[];
     
-    if (!cellContent && type !== ColumnDataType.ACTIONS && type !== ColumnDataType.NUMBER) {
+    if (!cellContent && type !== ColumnDataType.CUSTOM && type !== ColumnDataType.ACTIONS && type !== ColumnDataType.NUMBER) {
       return '-';
     }
 
@@ -116,21 +148,47 @@ export function ReportingTableView<T extends BaseTableItem>({
         );
       
       case ColumnDataType.LINK:
-        // Add link rendering logic here if needed
         return (
-          <Typography 
-            display="inline-block" 
-            title={cellContent as string} 
-            className="!tw-text-sm !tw-text-blue-600 !tw-cursor-pointer" 
-            component="span"
+          <Link
+            isExternal={!!href}
+            to={href ? (get(item, href) as string) : `details?id=${get(item, tableKey)}`}
+            target={href ? '_blank' : '_self'}
+            rel="noopener noreferrer"
           >
             {cellContent as string}
-          </Typography>
+          </Link>
         );
       
       case ColumnDataType.CUSTOM:
-        // Add custom cell rendering logic here if needed
-        return cellContent as string;
+        return customCellPath && customCellKeyPath && ((Array.isArray(cellContent) && cellContent.length) || get(cellContent, customCellPath)) ? (
+          <BaseChip
+            maxCount={3}
+            className={customClass}
+            variant="outlined"
+            label={
+              isArray(cellContent)
+                ? cellContent.map((item) => ({
+                    label: get(item, customCellPath) as string,
+                    link: `${href}?id=${get(item, customCellKeyPath)}`
+                  }))
+                : {
+                    label: get(cellContent, customCellPath) as string,
+                    link: `${href}?id=${get(cellContent, customCellKeyPath)}`
+                  }
+            }
+          />
+        ) : (
+          <Box
+            onClick={() => handleCustomCellClick?.(item, id)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                handleCustomCellClick?.(item);
+              }
+            }}
+          >
+            {customCellFallback}
+          </Box>
+        );
       
       case ColumnDataType.TEXT:
       default:
@@ -147,46 +205,38 @@ export function ReportingTableView<T extends BaseTableItem>({
     }
   };
 
-  const handleSort = (field: string) => {
-    if (onSort && visibleColumns.find(col => col.field === field)?.sortable) {
-      onSort(field);
+  const getSortIcon = (field: string) => {
+    const mappedField = sortMap[field] || field;
+    if (orderBy === mappedField && order === 'asc') {
+      return <img src={SortAscIcon} alt="asc-sort" />;
+    } else if (orderBy === mappedField && order === 'desc') {
+      return <img src={SortDescIcon} alt="desc-sort" />;
+    } else {
+      return <img src={SortIcon} alt="" />;
     }
   };
 
-  const renderSortIcon = (column: ColumnConfig) => {
-    if (!column.sortable) return null;
-    
-    const isActive = orderBy === column.field;
-    
-    if (isActive && order === SortDirection.ASC) {
-      return <ArrowUpward className="!tw-text-xs" />;
-    } else if (isActive && order === SortDirection.DESC) {
-      return <ArrowDownward className="!tw-text-xs" />;
-    } else {
-      return (
-        <Box className="!tw-flex !tw-flex-col">
-          <ArrowUpward className="!tw-text-xs !tw-text-gray-400" />
-          <ArrowDownward className="!tw-text-xs !tw-text-gray-400" />
-        </Box>
-      );
-    }
+  const renderSortIcon = (field: string) => {
+    return <Icon>{getSortIcon(field)}</Icon>;
   };
 
   const renderHeaderContent = (column: ColumnConfig) => {
+    const mappedField = sortMap[column.field] || column.field;
+    
     if (column.sortable) {
       return (
         <TableSortLabel
-          active={orderBy === column.field}
-          direction={orderBy === column.field ? order : SortDirection.ASC}
-          onClick={() => handleSort(column.field)}
-          IconComponent={() => renderSortIcon(column)}
-          className="!tw-flex !tw-items-center !tw-gap-2"
+          hideSortIcon={!sortMap[column.field] && !column.sortable}
+          active={sortMap[column.field] ? orderBy === mappedField : orderBy === column.field}
+          direction={orderBy === mappedField ? order : 'asc'}
+          onClick={() => handleSort(mappedField)}
+          IconComponent={() => renderSortIcon(column.field)}
         >
-          {column.label}
+          {column.label || column.field}
         </TableSortLabel>
       );
     }
-    return column.label;
+    return column.label || column.field;
   };
 
   return (
@@ -217,14 +267,13 @@ export function ReportingTableView<T extends BaseTableItem>({
       >
         <TableHead>
           <TableRow className="!tw-bg-gray-50">
-            {visibleColumns.map((column) => (
+            {sortedVisibleColumns?.map((column) => (
               <TableCell
                 key={column.field}
                 className="!tw-font-semibold !tw-text-base !tw-py-4 !tw-bg-gray-50 !tw-sticky !tw-top-0 !tw-z-10"
                 align={column.align || (column.field === 'actions' || column.field === 'associatedRfes' ? 'center' : 'left')}
-                sx={{ width: getColumnWidth(column) }}
                 component="th"
-                sortDirection={orderBy === column.field ? order : false}
+                sortDirection={orderBy === (sortMap[column.field] || column.field) ? order : false}
               >
                 {renderHeaderContent(column)}
               </TableCell>
@@ -244,27 +293,30 @@ export function ReportingTableView<T extends BaseTableItem>({
               />
             ) : (
               <TableRow
-                key={item.id}
+                key={`${get(item, tableKey)}`}
                 className="hover:!tw-bg-gray-50"
                 hover
               >
-                {visibleColumns.map((column) => (
+                {sortedVisibleColumns?.map((colConfig) => (
                   <TableCell 
-                    key={`${column.field}-${item.id}`}
-                    className={`${column.field === 'name' ? "!tw-font-medium" : ""} ${column.wide ? '!tw-min-w-[28rem]' : ''}`}
-                    align={column.align || (column.field === 'actions' || column.field === 'associatedRfes' ? 'center' : 'left')}
+                    key={`${colConfig.field}-${get(item, tableKey)}`}
+                    className={`${
+                      dimmedRowConfig && get(item, dimmedRowConfig.keyPath) === dimmedRowConfig.value ? 'inactive' : ''
+                    } ${colConfig.wide ? '!tw-min-w-[28rem]' : ''} ${
+                      colConfig.field === 'name' ? "!tw-font-medium" : ""
+                    }`}
+                    align={colConfig.align || (colConfig.field === 'actions' || colConfig.field === 'associatedRfes' ? 'center' : 'left')}
                     component="td"
                     scope="row"
                     sx={{ 
-                      width: getColumnWidth(column),
-                      ...(column.field === 'name' && {
+                      ...(colConfig.field === 'name' && {
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap'
                       })
                     }}
                   >
-                    {renderCell(item, column)}
+                    {renderCell(item, colConfig)}
                   </TableCell>
                 ))}
               </TableRow>
