@@ -16,6 +16,7 @@ import {
   ArrowDownward
 } from '@mui/icons-material';
 import type { TableColumn, BaseTableItem } from '../../types/reporting';
+import { ColumnDataType } from '../../types/reporting';
 import { EditableTableRow } from './EditableTableRow';
 
 interface DataTableProps<T extends BaseTableItem> {
@@ -41,25 +42,74 @@ export function DataTable<T extends BaseTableItem>({
     const newItem = data.find(item => item.isNew && item.isEditing);
     if (newItem && newRowRef.current && tableContainerRef.current) {
       // Smooth scroll to the new row
-      newRowRef.current.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'center' 
+      newRowRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
       });
     }
   }, [data]);
-  
+
   const getRowNumber = (index: number) => {
     return index + 1;
   };
 
+  const getColumnWidth = (column: TableColumn) => {
+    switch (column.field) {
+      case 'number':
+        return '60px';
+      case 'actions':
+        return '80px';
+      case 'associatedRfes':
+        return '120px';
+      default:
+        return 'auto';
+    }
+  };
+
+  const renderCellContent = (item: T, column: TableColumn) => {
+    switch (column.field) {
+      case 'number':
+        return getRowNumber(data.indexOf(item));
+      case 'name':
+        return item.name;
+      case 'associatedRfes':
+        return item.associatedActiveRfe;
+      case 'actions':
+        return (
+          <IconButton
+            onClick={() => onEdit(item)}
+            size="small"
+            className="!tw-text-blue-600 hover:!tw-bg-blue-100 hover:!tw-text-white"
+          >
+            <Edit />
+          </IconButton>
+        );
+      default:
+        return '';
+    }
+  };
+
+  const renderHeaderContent = (column: TableColumn) => {
+    if (column.sortable && column.field !== 'actions') {
+      return (
+        <Box className="!tw-flex !tw-items-center !tw-gap-2 !tw-justify-center">
+          {column.label}
+          <Box className="!tw-flex !tw-flex-col">
+            <ArrowUpward className="!tw-text-xs !tw-text-gray-400" />
+            <ArrowDownward className="!tw-text-xs !tw-text-gray-400" />
+          </Box>
+        </Box>
+      );
+    }
+    return column.label;
+  };
+
   return (
-    <TableContainer 
-      component={Paper} 
+    <TableContainer
+      component={Paper}
       ref={tableContainerRef}
-      className="!tw-rounded-lg"
-      sx={{ 
-        height: '100%',
-        overflow: 'auto',
+      className="!tw-rounded-lg !tw-h-full !tw-overflow-auto"
+      sx={{
         '&::-webkit-scrollbar': {
           width: '8px',
         },
@@ -76,73 +126,22 @@ export function DataTable<T extends BaseTableItem>({
         },
       }}
     >
-      <Table 
-        sx={{ 
-          tableLayout: 'fixed', 
-          width: '100%'
-        }}
+      <Table
+        className="!tw-table-fixed !tw-w-full"
         stickyHeader
       >
         <TableHead>
           <TableRow className="!tw-bg-gray-50">
-            <TableCell
-              className="!tw-font-semibold !tw-text-base !tw-py-4 !tw-bg-gray-50"
-              sx={{ 
-                width: '60px',
-                position: 'sticky',
-                top: 0,
-                zIndex: 1
-              }}
-            >
-              #
-            </TableCell>
-            <TableCell
-              className="!tw-font-semibold !tw-text-base !tw-py-4 !tw-bg-gray-50"
-              sx={{ 
-                width: 'auto',
-                position: 'sticky',
-                top: 0,
-                zIndex: 1
-              }}
-            >
-              <Box className="!tw-flex !tw-items-center !tw-gap-2">
-                Name
-                <Box className="!tw-flex !tw-flex-col">
-                  <ArrowUpward className="!tw-text-xs !tw-text-gray-400" />
-                  <ArrowDownward className="!tw-text-xs !tw-text-gray-400" />
-                </Box>
-              </Box>
-            </TableCell>
-            <TableCell
-              className="!tw-font-semibold !tw-text-base !tw-py-4 !tw-bg-gray-50"
-              align="center"
-              sx={{ 
-                width: '120px',
-                position: 'sticky',
-                top: 0,
-                zIndex: 1
-              }}
-            >
-              <Box className="!tw-flex !tw-items-center !tw-gap-2 !tw-justify-center">
-                # RFEs
-                <Box className="!tw-flex !tw-flex-col">
-                  <ArrowUpward className="!tw-text-xs !tw-text-gray-400" />
-                  <ArrowDownward className="!tw-text-xs !tw-text-gray-400" />
-                </Box>
-              </Box>
-            </TableCell>
-            <TableCell
-              className="!tw-font-semibold !tw-text-base !tw-py-4 !tw-bg-gray-50"
-              align="center"
-              sx={{ 
-                width: '80px',
-                position: 'sticky',
-                top: 0,
-                zIndex: 1
-              }}
-            >
-              Actions
-            </TableCell>
+            {columns.map((column) => (
+              <TableCell
+                key={column.field}
+                className="!tw-font-semibold !tw-text-base !tw-py-4 !tw-bg-gray-50 !tw-sticky !tw-top-0 !tw-z-10"
+                align={column.field === 'actions' || column.field === 'associatedRfes' ? 'center' : 'left'}
+                sx={{ width: getColumnWidth(column) }}
+              >
+                {renderHeaderContent(column)}
+              </TableCell>
+            ))}
           </TableRow>
         </TableHead>
         <TableBody>
@@ -151,8 +150,8 @@ export function DataTable<T extends BaseTableItem>({
               <EditableTableRow
                 key={item.id}
                 item={item}
-                onSave={onSave}
-                onCancel={onCancel}
+                onSave={onSave as (item: BaseTableItem) => void}
+                onCancel={onCancel as (item: BaseTableItem) => void}
                 ref={item.isNew ? newRowRef : undefined}
                 rowNumber={getRowNumber(index)}
               />
@@ -161,28 +160,23 @@ export function DataTable<T extends BaseTableItem>({
                 key={item.id}
                 className="hover:!tw-bg-gray-50"
               >
-                <TableCell sx={{ width: '60px' }}>{getRowNumber(index)}</TableCell>
-                <TableCell 
-                  className="!tw-font-medium" 
-                  sx={{ 
-                    width: 'auto',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap'
-                  }}
-                >
-                  {item.name}
-                </TableCell>
-                <TableCell align="center" sx={{ width: '120px' }}>{item.associatedActiveRfe}</TableCell>
-                <TableCell align="center" sx={{ width: '80px' }}>
-                  <IconButton
-                    onClick={() => onEdit(item)}
-                    size="small"
-                    className="!tw-text-blue-600 hover:!tw-bg-blue-100 hover:!tw-text-white"
+                {columns.map((column) => (
+                  <TableCell
+                    key={column.field}
+                    className={column.field === 'name' ? "!tw-font-medium" : ""}
+                    align={column.field === 'actions' || column.field === 'associatedRfes' ? 'center' : 'left'}
+                    sx={{
+                      width: getColumnWidth(column),
+                      ...(column.field === 'name' && {
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      })
+                    }}
                   >
-                    <Edit />
-                  </IconButton>
-                </TableCell>
+                    {renderCellContent(item, column)}
+                  </TableCell>
+                ))}
               </TableRow>
             )
           ))}

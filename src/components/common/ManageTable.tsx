@@ -30,21 +30,10 @@ export function ManageTable<T extends BaseTableItem>({
       open={true}
       onClose={onClose}
       PaperProps={{
-        sx: {
-          borderRadius: 3,
-          height: '80vh',
-          width: '650px',
-          maxWidth: '650px',
-          maxHeight: '80vh',
-          display: 'flex',
-          flexDirection: 'column'
-        }
+        className: "!tw-rounded-xl !tw-h-[80vh] !tw-w-[650px] !tw-max-w-[650px] !tw-max-h-[80vh] !tw-flex !tw-flex-col"
       }}
     >
-      <DialogTitle
-        className="!tw-flex !tw-justify-between !tw-items-center !tw-pb-2 !tw-border-b !tw-border-gray-200"
-        sx={{ flexShrink: 0 }}
-      >
+      <DialogTitle className="!tw-flex !tw-justify-between !tw-items-center !tw-pb-2 !tw-border-b !tw-border-gray-200 !tw-flex-shrink-0">
         <span className="!tw-text-2xl !tw-font-semibold !tw-text-gray-900">
           {title}
         </span>
@@ -53,19 +42,8 @@ export function ManageTable<T extends BaseTableItem>({
         </IconButton>
       </DialogTitle>
 
-      <DialogContent 
-        sx={{ 
-          p: 0, 
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          flex: 1
-        }}
-      >
-        <Box 
-          className="!tw-p-6 !tw-flex !tw-justify-end"
-          sx={{ flexShrink: 0 }}
-        >
+      <DialogContent className="!tw-p-0 !tw-overflow-hidden !tw-flex !tw-flex-col !tw-flex-1">
+        <Box className="!tw-p-6 !tw-flex !tw-justify-end !tw-flex-shrink-0">
           <Button
             variant="contained"
             startIcon={<Add />}
@@ -76,7 +54,7 @@ export function ManageTable<T extends BaseTableItem>({
           </Button>
         </Box>
 
-        <Box sx={{ flex: 1, overflow: 'hidden', px: 3 }}>
+        <Box className="!tw-flex-1 !tw-overflow-hidden !tw-px-3">
           <DataTable
             data={data}
             columns={columns}
@@ -86,10 +64,7 @@ export function ManageTable<T extends BaseTableItem>({
           />
         </Box>
 
-        <Box 
-          className="!tw-p-6 !tw-flex !tw-justify-start"
-          sx={{ flexShrink: 0 }}
-        >
+        <Box className="!tw-p-6 !tw-flex !tw-justify-start !tw-flex-shrink-0">
           <Button
             variant="text"
             onClick={onClose}
