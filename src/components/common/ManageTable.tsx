@@ -11,16 +11,10 @@ import {
   Close,
   Add
 } from '@mui/icons-material';
-import type { ManageTableProps } from '../../types/reporting';
+import type { ManageTableProps, BaseTableItem } from '../../types/reporting';
 import { DataTable } from './DataTable';
 
-export function ManageTable<T extends { 
-  id: string; 
-  name: string; 
-  associatedActiveRfe: number;
-  isNew?: boolean; 
-  isEditing?: boolean 
-}>({
+export function ManageTable<T extends BaseTableItem>({
   title,
   data,
   columns,

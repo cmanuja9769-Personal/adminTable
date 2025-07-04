@@ -18,14 +18,33 @@ export interface ReportDestination {
   isEditing?: boolean;
 }
 
-export interface TableColumn {
-  id: string;
-  label: string;
-  sortable?: boolean;
-  width?: string;
+export enum ColumnDataType {
+  TEXT = 'text',
+  NUMBER = 'number',
+  DATE = 'date',
+  BOOLEAN = 'boolean',
+  ACTIONS = 'actions'
 }
 
-export interface ManageTableProps<T> {
+export interface TableColumn {
+  field: string;
+  path: string;
+  group?: string;
+  default: boolean | string | number;
+  type: ColumnDataType;
+  label: string;
+  sortable?: boolean;
+}
+
+export interface BaseTableItem {
+  id: string;
+  name: string;
+  associatedActiveRfe: number;
+  isNew?: boolean;
+  isEditing?: boolean;
+}
+
+export interface ManageTableProps<T extends BaseTableItem> {
   title: string;
   data: T[];
   columns: TableColumn[];

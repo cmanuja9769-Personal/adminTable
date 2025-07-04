@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ManageTable } from '../common/ManageTable';
 import type { ReportDestination, TableColumn } from '../../types/reporting';
+import { ColumnDataType } from '../../types/reporting';
 import { ReportingService } from '../../services/reportingService';
 
 interface ManageReportDestinationsProps {
@@ -12,10 +13,37 @@ export const ManageReportDestinations: React.FC<ManageReportDestinationsProps> =
   const [loading, setLoading] = useState(true);
 
   const columns: TableColumn[] = [
-    { id: 'number', label: 'RD #', sortable: true, width: '10%' },
-    { id: 'name', label: 'Report Destination', sortable: true, width: '50%' },
-    { id: 'associatedRfes', label: '# of Associated RFEs', sortable: true, width: '25%' },
-    { id: 'actions', label: 'Actions', width: '15%' }
+    { 
+      field: 'number', 
+      path: 'number', 
+      default: false, 
+      type: ColumnDataType.NUMBER,
+      label: 'RD #', 
+      sortable: true
+    },
+    { 
+      field: 'name', 
+      path: 'name', 
+      default: '', 
+      type: ColumnDataType.TEXT,
+      label: 'Report Destination', 
+      sortable: true
+    },
+    { 
+      field: 'associatedRfes', 
+      path: 'associatedActiveRfe', 
+      default: 0, 
+      type: ColumnDataType.NUMBER,
+      label: '# of Associated RFEs', 
+      sortable: true
+    },
+    { 
+      field: 'actions', 
+      path: 'actions', 
+      default: false, 
+      type: ColumnDataType.ACTIONS,
+      label: 'Actions'
+    }
   ];
 
   useEffect(() => {

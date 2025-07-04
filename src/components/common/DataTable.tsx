@@ -15,16 +15,10 @@ import {
   ArrowUpward,
   ArrowDownward
 } from '@mui/icons-material';
-import type { TableColumn } from '../../types/reporting';
+import type { TableColumn, BaseTableItem } from '../../types/reporting';
 import { EditableTableRow } from './EditableTableRow';
 
-interface DataTableProps<T extends { 
-  id: string; 
-  name: string; 
-  associatedActiveRfe: number;
-  isNew?: boolean; 
-  isEditing?: boolean 
-}> {
+interface DataTableProps<T extends BaseTableItem> {
   data: T[];
   columns: TableColumn[];
   onEdit: (item: T) => void;
@@ -32,13 +26,7 @@ interface DataTableProps<T extends {
   onCancel: (item: T) => void;
 }
 
-export function DataTable<T extends { 
-  id: string; 
-  name: string; 
-  associatedActiveRfe: number;
-  isNew?: boolean; 
-  isEditing?: boolean 
-}>({
+export function DataTable<T extends BaseTableItem>({
   data,
   columns,
   onEdit,
@@ -75,10 +63,9 @@ export function DataTable<T extends {
           <TableRow className="!tw-bg-gray-50">
             {columns.map((column) => (
               <TableCell
-                key={column.id}
+                key={column.field}
                 className="!tw-font-semibold !tw-text-base !tw-py-4"
-                style={{ width: column.width }}
-                align={column.id === 'actions' || column.id === 'associatedRfes' ? 'center' : 'left'}
+                align={column.field === 'actions' || column.field === 'associatedRfes' ? 'center' : 'left'}
               >
                 <Box className="!tw-flex !tw-items-center !tw-gap-2">
                   {column.label}
