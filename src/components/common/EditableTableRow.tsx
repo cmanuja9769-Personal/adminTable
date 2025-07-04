@@ -98,8 +98,8 @@ export const EditableTableRow = forwardRef<HTMLTableRowElement, EditableRowProps
             : 'hover:!tw-bg-gray-50'
         }`}
       >
-        <TableCell>{rowNumber || '-'}</TableCell>
-        <TableCell>
+        <TableCell sx={{ width: '60px' }}>{rowNumber || '-'}</TableCell>
+        <TableCell sx={{ width: 'auto' }}>
           <TextField
             inputRef={textFieldRef}
             value={editedName}
@@ -109,11 +109,16 @@ export const EditableTableRow = forwardRef<HTMLTableRowElement, EditableRowProps
             fullWidth
             placeholder="Enter name"
             className="!tw-bg-white"
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                fontSize: '14px'
+              }
+            }}
           />
         </TableCell>
-        <TableCell align="center">{getAssociatedRFEs()}</TableCell>
-        <TableCell align="center">
-          <Box className="!tw-flex !tw-gap-2 !tw-justify-center">
+        <TableCell align="center" sx={{ width: '120px' }}>{getAssociatedRFEs()}</TableCell>
+        <TableCell align="center" sx={{ width: '80px' }}>
+          <Box className="!tw-flex !tw-gap-1 !tw-justify-center">
             <IconButton
               onClick={handleCancel}
               size="small"

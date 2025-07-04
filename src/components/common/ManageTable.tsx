@@ -29,17 +29,21 @@ export function ManageTable<T extends BaseTableItem>({
     <Dialog
       open={true}
       onClose={onClose}
-      maxWidth="lg"
-      fullWidth
       PaperProps={{
         sx: {
           borderRadius: 3,
-          minHeight: '70vh'
+          height: '80vh',
+          width: '650px',
+          maxWidth: '650px',
+          maxHeight: '80vh',
+          display: 'flex',
+          flexDirection: 'column'
         }
       }}
     >
       <DialogTitle
         className="!tw-flex !tw-justify-between !tw-items-center !tw-pb-2 !tw-border-b !tw-border-gray-200"
+        sx={{ flexShrink: 0 }}
       >
         <span className="!tw-text-2xl !tw-font-semibold !tw-text-gray-900">
           {title}
@@ -49,8 +53,19 @@ export function ManageTable<T extends BaseTableItem>({
         </IconButton>
       </DialogTitle>
 
-      <DialogContent sx={{ p: 0 }}>
-        <Box className="!tw-p-6 !tw-flex !tw-justify-end">
+      <DialogContent 
+        sx={{ 
+          p: 0, 
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          flex: 1
+        }}
+      >
+        <Box 
+          className="!tw-p-6 !tw-flex !tw-justify-end"
+          sx={{ flexShrink: 0 }}
+        >
           <Button
             variant="contained"
             startIcon={<Add />}
@@ -61,15 +76,20 @@ export function ManageTable<T extends BaseTableItem>({
           </Button>
         </Box>
 
-        <DataTable
-          data={data}
-          columns={columns}
-          onEdit={onEdit}
-          onSave={onSave}
-          onCancel={onCancel}
-        />
+        <Box sx={{ flex: 1, overflow: 'hidden', px: 3 }}>
+          <DataTable
+            data={data}
+            columns={columns}
+            onEdit={onEdit}
+            onSave={onSave}
+            onCancel={onCancel}
+          />
+        </Box>
 
-        <Box className="!tw-p-6 !tw-flex !tw-justify-start">
+        <Box 
+          className="!tw-p-6 !tw-flex !tw-justify-start"
+          sx={{ flexShrink: 0 }}
+        >
           <Button
             variant="text"
             onClick={onClose}

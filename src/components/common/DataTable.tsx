@@ -56,28 +56,93 @@ export function DataTable<T extends BaseTableItem>({
     <TableContainer 
       component={Paper} 
       ref={tableContainerRef}
-      className="!tw-mx-6 !tw-mb-6 !tw-rounded-lg"
+      className="!tw-rounded-lg"
+      sx={{ 
+        height: '100%',
+        overflow: 'auto',
+        '&::-webkit-scrollbar': {
+          width: '8px',
+        },
+        '&::-webkit-scrollbar-track': {
+          backgroundColor: '#f1f1f1',
+          borderRadius: '4px',
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: '#c1c1c1',
+          borderRadius: '4px',
+          '&:hover': {
+            backgroundColor: '#a8a8a8',
+          },
+        },
+      }}
     >
-      <Table>
+      <Table 
+        sx={{ 
+          tableLayout: 'fixed', 
+          width: '100%'
+        }}
+        stickyHeader
+      >
         <TableHead>
           <TableRow className="!tw-bg-gray-50">
-            {columns.map((column) => (
-              <TableCell
-                key={column.field}
-                className="!tw-font-semibold !tw-text-base !tw-py-4"
-                align={column.field === 'actions' || column.field === 'associatedRfes' ? 'center' : 'left'}
-              >
-                <Box className="!tw-flex !tw-items-center !tw-gap-2">
-                  {column.label}
-                  {column.sortable && (
-                    <Box className="!tw-flex !tw-flex-col">
-                      <ArrowUpward className="!tw-text-xs !tw-text-gray-400" />
-                      <ArrowDownward className="!tw-text-xs !tw-text-gray-400" />
-                    </Box>
-                  )}
+            <TableCell
+              className="!tw-font-semibold !tw-text-base !tw-py-4 !tw-bg-gray-50"
+              sx={{ 
+                width: '60px',
+                position: 'sticky',
+                top: 0,
+                zIndex: 1
+              }}
+            >
+              #
+            </TableCell>
+            <TableCell
+              className="!tw-font-semibold !tw-text-base !tw-py-4 !tw-bg-gray-50"
+              sx={{ 
+                width: 'auto',
+                position: 'sticky',
+                top: 0,
+                zIndex: 1
+              }}
+            >
+              <Box className="!tw-flex !tw-items-center !tw-gap-2">
+                Name
+                <Box className="!tw-flex !tw-flex-col">
+                  <ArrowUpward className="!tw-text-xs !tw-text-gray-400" />
+                  <ArrowDownward className="!tw-text-xs !tw-text-gray-400" />
                 </Box>
-              </TableCell>
-            ))}
+              </Box>
+            </TableCell>
+            <TableCell
+              className="!tw-font-semibold !tw-text-base !tw-py-4 !tw-bg-gray-50"
+              align="center"
+              sx={{ 
+                width: '120px',
+                position: 'sticky',
+                top: 0,
+                zIndex: 1
+              }}
+            >
+              <Box className="!tw-flex !tw-items-center !tw-gap-2 !tw-justify-center">
+                # RFEs
+                <Box className="!tw-flex !tw-flex-col">
+                  <ArrowUpward className="!tw-text-xs !tw-text-gray-400" />
+                  <ArrowDownward className="!tw-text-xs !tw-text-gray-400" />
+                </Box>
+              </Box>
+            </TableCell>
+            <TableCell
+              className="!tw-font-semibold !tw-text-base !tw-py-4 !tw-bg-gray-50"
+              align="center"
+              sx={{ 
+                width: '80px',
+                position: 'sticky',
+                top: 0,
+                zIndex: 1
+              }}
+            >
+              Actions
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -96,10 +161,20 @@ export function DataTable<T extends BaseTableItem>({
                 key={item.id}
                 className="hover:!tw-bg-gray-50"
               >
-                <TableCell>{getRowNumber(index)}</TableCell>
-                <TableCell className="!tw-font-medium">{item.name}</TableCell>
-                <TableCell align="center">{item.associatedActiveRfe}</TableCell>
-                <TableCell align="center">
+                <TableCell sx={{ width: '60px' }}>{getRowNumber(index)}</TableCell>
+                <TableCell 
+                  className="!tw-font-medium" 
+                  sx={{ 
+                    width: 'auto',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {item.name}
+                </TableCell>
+                <TableCell align="center" sx={{ width: '120px' }}>{item.associatedActiveRfe}</TableCell>
+                <TableCell align="center" sx={{ width: '80px' }}>
                   <IconButton
                     onClick={() => onEdit(item)}
                     size="small"
